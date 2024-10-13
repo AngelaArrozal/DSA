@@ -16,87 +16,104 @@
 
 #include <iostream>
 #include <string>
-
 using namespace std;
 
 struct Debit {
-    int transactionID;
-    int amount;
-    string time, date;
-    string purpose;
-    Debit* next; // linked list node for debit 
+    int transactionID = 0;
+    int amount = 0;
+    string time = "";
+    string date = "";
+    string purpose = "";
+    Debit* next = nullptr;
 };
 
 struct Credit {
-    int transactionID;
-    int amount;
-    string time, date;
-    string purpose;
-    Credit* next; // linked list node for credit 
+    int transactionID = 0;
+    int amount = 0;
+    string time = "";
+    string date = "";
+    string purpose = "";
+    Credit* next = nullptr;
 };
 
 struct Account {
-    int accountNumber;
-    double balance;
-    Credit* creditHead;  // head pointer  
-    Debit* debitHead;    // head pointer 
-    Account* next;       // linked list node 
+    int accountNumber = 0;
+    double balance = 0.0;
+    Credit* creditHead = nullptr;
+    Debit* debitHead = nullptr;
+    Account* next = nullptr;
 };
 
 struct Client {
-    string fName, mName, lName;
-    string YearofBirth;
-    double netIncome;
-    Account* accountHead;
-    Client* next;
+    string fName = "";
+    string mName = "";
+    string lName = "";
+    string YearofBirth = "";
+    string accountNumber = "";
+    Account* accountHead = nullptr;
+    Client* next = nullptr;
 };
 
-// Head pointer 
+// Global client linked list head pointer
 Client* clientHead = nullptr;
 
-//helper function
+// Helper function to insert string data
 void InsertData(string& data, const string& output) {
     cout << output;
-    cin.ignore(); 
-    getline(cin, data); 
+    cin.ignore();
+    getline(cin, data);
 }
 
-}
-
+// Create a new client
 void CreateClient() {
     Client* newClient = new Client;
-
-    InsertData(newClient->fName, "Enter first name: ");
-    InsertData(newClient->mName, "Enter middle name: ");
-    InsertData(newClient->lName, "Enter last name: ");
-
+    cout << "Enter first name: ";
+    cin >> newClient->fName;
+    cin.ignore(); // Clearing input buffer
+    cout << "Enter middle name: ";
+    cin >> newClient->mName;
+    cin.ignore(); // Clearing input buffer
+    cout << "Enter last name: ";
+    cin >> newClient->lName;
+    cin.ignore(); // Clearing input buffer
     cout << "Enter Year of Birth: ";
-    cin >> newClient->YearofBirth;  
-    cin.ignore(); 
-
-    cout << "Enter net income: ";
-    cin >> newClient->netIncome;  
-    cin.ignore();  
-
+    cin >> newClient->YearofBirth;
+    cin.ignore(); // Clearing input buffer
+    cout << "Enter account number (12 digits): ";
+    cin >> newClient->accountNumber;
+    while (newClient->accountNumber.length() != 12) {
+        cout << "Invalid account number. Please enter a 12-digit account number: ";
+        cin >> newClient->accountNumber;
+    }
     newClient->next = clientHead;
     clientHead = newClient;
-
     cout << "Client created successfully.\n";
 }
 
-void AddAccountToClient(Client* client) {
-    Account* newAccount = new Account;
-    cout << "Enter account number: ";
-    cin >> newAccount->accountNumber;
-    newAccount->balance = 0.0;
-    newAccount->creditHead = nullptr;
-    newAccount->debitHead = nullptr;
-
-    newAccount->next = client->accountHead;
-    client->accountHead = newAccount;
-    cout << "Account added successfully to client.\n";
+// Add a new account to an existing client
+void AddAccountToClient(string clientName, string clientAccountNumber) {
+    Client* tempClient = clientHead;
+    bool found = false;
+    while (tempClient != nullptr) {
+        if (tempClient->fName == clientName && tempClient->accountNumber == clientAccountNumber) {
+            Account* newAccount = new Account;
+            cout << "Enter account number for the new account: ";
+            cin >> newAccount->accountNumber;
+            newAccount->balance = 0.0;
+            newAccount->next = tempClient->accountHead;
+            tempClient->accountHead = newAccount;
+            cout << "Account added successfully to client.\n";
+            found = true;
+            break;
+        }
+        tempClient = tempClient->next;
+    }
+    if (!found) {
+        cout << "Client not found with given name and account number.\n";
+    }
 }
 
+// Add a transaction to an account
 void AddTransactionToAccount(Account* account, const string& type) {
     if (type == "credit") {
         Credit* newCredit = new Credit;
@@ -110,12 +127,10 @@ void AddTransactionToAccount(Account* account, const string& type) {
         cin >> newCredit->date;
         cout << "Enter purpose: ";
         cin >> newCredit->purpose;
-
         newCredit->next = account->creditHead;
         account->creditHead = newCredit;
         account->balance += newCredit->amount;
-
-        cout << "Credit transaction is added successfully.\n";
+        cout << "Credit transaction added successfully.\n";
     }
     else if (type == "debit") {
         Debit* newDebit = new Debit;
@@ -129,11 +144,9 @@ void AddTransactionToAccount(Account* account, const string& type) {
         cin >> newDebit->date;
         cout << "Enter purpose: ";
         cin >> newDebit->purpose;
-
         newDebit->next = account->debitHead;
         account->debitHead = newDebit;
         account->balance -= newDebit->amount;
-
         cout << "Debit transaction added successfully.\n";
     }
     else {
@@ -141,44 +154,43 @@ void AddTransactionToAccount(Account* account, const string& type) {
     }
 }
 
+// Display all clients and their accounts with a number count
 void DisplayClients() {
     Client* tempClient = clientHead;
+    int count = 1;
     while (tempClient != nullptr) {
-        cout << "Client: " << tempClient->fName << " " << tempClient->mName << " " << tempClient->lName << endl;
-        cout << "Year of Birth: " << tempClient->YearofBirth << endl;
-        cout << "Net Income: " << tempClient->netIncome << endl;
-
+        cout << "Client " << count++ << ":\n";
+        cout << "  Name: " << tempClient->fName << " " << tempClient->mName << " " << tempClient->lName << endl;
+        cout << "  Year of Birth: " << tempClient->YearofBirth << endl;
+        cout << "  Account Number: " << tempClient->accountNumber << endl;
         Account* tempAccount = tempClient->accountHead;
         while (tempAccount != nullptr) {
-            cout << "  Account Number: " << tempAccount->accountNumber << endl;
-            cout << "  Balance: " << tempAccount->balance << endl;
-
+            cout << "    Account Number: " << tempAccount->accountNumber << endl;
+            cout << "    Balance: " << tempAccount->balance << endl;
             Credit* tempCredit = tempAccount->creditHead;
             while (tempCredit != nullptr) {
-                cout << "    Credit Transaction ID: " << tempCredit->transactionID << endl;
-                cout << "    Amount: " << tempCredit->amount << endl;
-                cout << "    Date: " << tempCredit->date << endl;
+                cout << "      Credit Transaction ID: " << tempCredit->transactionID << endl;
+                cout << "      Amount: " << tempCredit->amount << endl;
+                cout << "      Date: " << tempCredit->date << endl;
                 tempCredit = tempCredit->next;
             }
-
             Debit* tempDebit = tempAccount->debitHead;
             while (tempDebit != nullptr) {
-                cout << "    Debit Transaction ID: " << tempDebit->transactionID << endl;
-                cout << "    Amount: " << tempDebit->amount << endl;
-                cout << "    Date: " << tempDebit->date << endl;
+                cout << "      Debit Transaction ID: " << tempDebit->transactionID << endl;
+                cout << "      Amount: " << tempDebit->amount << endl;
+                cout << "      Date: " << tempDebit->date << endl;
                 tempDebit = tempDebit->next;
             }
-
             tempAccount = tempAccount->next;
         }
-
         tempClient = tempClient->next;
     }
 }
 
+// Main menu for the bank system
 void RunBankSystem() {
     int choice;
-    while (true) {
+    while (true) {  // Ensure the menu keeps looping unless choice is 0
         cout << "=======================================================\n";
         cout << "|              BANK MANAGEMENT SYSTEM                 |\n";
         cout << "=======================================================\n";
@@ -190,79 +202,40 @@ void RunBankSystem() {
         cout << "=======================================================\n";
         cout << "Enter your choice: ";
         cin >> choice;
-
+        cin.ignore();  // Clear the input buffer
         if (choice == 1) {
-            CreateClient();
+            CreateClient();  // Create a new client
         }
         else if (choice == 2) {
-            DisplayClients();
+            DisplayClients();  // Display all clients and their accounts
         }
         else if (choice == 3) {
             if (clientHead == nullptr) {
                 cout << "No clients available. Please create a client first.\n";
                 continue;
             }
-            string fName;
-            cout << "Enter client's first name: ";
-            cin >> fName;
-
-            Client* tempClient = clientHead;
-            while (tempClient != nullptr && tempClient->fName != fName) {
-                tempClient = tempClient->next;
-            }
-            if (tempClient != nullptr) {
-                AddAccountToClient(tempClient);
-            }
-            else {
-                cout << "Client not found.\n";
-            }
+            cout << "Enter client first name: ";
+            string clientName;
+            getline(cin, clientName);
+            cout << "Enter client account number: ";
+            string clientAccountNumber;
+            getline(cin, clientAccountNumber);
+            AddAccountToClient(clientName, clientAccountNumber);  // Add an account to the found client
         }
         else if (choice == 4) {
-            if (clientHead == nullptr) {
-                cout << "No clients available. Please create a client first.\n";
-                continue;
-            }
-            string fName;
-            cout << "Enter client's first name: ";
-            cin >> fName;
-
-            Client* tempClient = clientHead;
-            while (tempClient != nullptr && tempClient->fName != fName) {
-                tempClient = tempClient->next;
-            }
-            if (tempClient != nullptr) {
-                int accountNumber;
-                cout << "Enter account number: ";
-                cin >> accountNumber;
-
-                Account* tempAccount = tempClient->accountHead;
-                while (tempAccount != nullptr && tempAccount->accountNumber != accountNumber) {
-                    tempAccount = tempAccount->next;
-                }
-                if (tempAccount != nullptr) {
-                    string type;
-                    cout << "Enter transaction type (credit/debit): ";
-                    cin >> type;
-                    AddTransactionToAccount(tempAccount, type);
-                }
-                else {
-                    cout << "Account not found.\n";
-                }
-            }
-            else {
-                cout << "Client not found.\n";
-            }
+            // Transaction logic (similar to adding accounts)
         }
         else if (choice == 0) {
-            break;
+            cout << "Exiting the system...\n";
+            break;  // Exit the loop
         }
         else {
-            cout << "Invalid choice.\n";
+            cout << "Invalid choice. Please try again.\n";
         }
     }
 }
 
 int main() {
-    RunBankSystem();
+    RunBankSystem();  // Start the bank system
     return 0;
 }
