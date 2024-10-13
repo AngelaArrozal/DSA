@@ -10,6 +10,8 @@
 // do not use class and expose it as struct
 
 //each clients can possibly have multiple accounts 
+//add status withdraw or deposit, place in struct
+//node within a node
 
 
 #include <iostream>
