@@ -1,0 +1,495 @@
+// create a c++ program Bank membership that stores:
+// data information of client
+// store transactions in credit with fee
+// debit for tranasactions
+
+// at least 3 data struct
+// 3 nodes
+// 3 linked list possible mag 4 because of the problem 
+// crud
+// do not use class and expose it as struct
+
+//each clients can possibly have multiple accounts 
+//add status withdraw or deposit, place in struct
+//node within a node
+
+#include <iostream>
+#include <string>
+
+using namespace std;
+
+// Struct Definitions
+struct Debit {
+    int transactionID = 0;
+    int amount = 0;
+    string time = "";
+    string date = "";
+    string purpose = "";
+    Debit* next = nullptr;
+};
+
+struct Credit {
+    int transactionID = 0;
+    int amount = 0;
+    string time = "";
+    string date = "";
+    string purpose = "";
+    Credit* next = nullptr;
+};
+
+struct Account {
+    int accountNumber = 0;
+    double balance = 0.0;
+    Credit* creditHead = nullptr;
+    Debit* debitHead = nullptr;
+    Account* next = nullptr;
+};
+
+struct Client {
+    string fName = "";
+    string mName = "";
+    string lName = "";
+    string YearofBirth = "";
+    string accountNumber = "";
+    Account* accountHead = nullptr;
+    Client* next = nullptr;
+};
+
+// Global client linked list head pointer
+Client* clientHead = nullptr;
+
+// Function declarations
+void CreateClient();
+void DisplayClients();
+void AddAccountToClient();
+void UpdateClientInformation(string accountNumber);
+void DeleteClient(string accountNumber);
+void DeleteAccountUnderClient(string clientName, string accountNumber);
+void AddTransactionToAccount();
+void RunBankSystem();
+bool isValidAccountNumber(const std::string& accountNumber, int& outNumber);
+
+// Main function
+int main() {
+    RunBankSystem();
+    return 0;
+}
+
+// Function to validate account number
+bool isValidAccountNumber(const std::string& accountNumber, int& outNumber) {
+    if (accountNumber.length() != 9) {  // Ensure it's 9 digits
+        return false;
+    }
+
+    outNumber = 0;  // Initialize the output number
+
+    for (char const& digitChar : accountNumber) {  // Use 'digitChar' for clarity
+        if (!isdigit(digitChar)) {
+            return false;  // Return false if a non-digit character is found
+        }
+
+        // Convert each digit to an integer and build the final number
+        outNumber = outNumber * 10 + (digitChar - '0');
+    }
+
+    return true;  // Return true if the entire string was valid
+}
+
+// Function to create a client
+void CreateClient() {
+    Client* newClient = new Client;
+    cout << "Enter first name: ";
+    getline(cin, newClient->fName);
+    cout << "Enter middle name: ";
+    getline(cin, newClient->mName);
+    cout << "Enter last name: ";
+    getline(cin, newClient->lName);
+    cout << "Enter Year of Birth: ";
+    getline(cin, newClient->YearofBirth);
+    cout << "Enter account number (9 digits): ";
+    getline(cin, newClient->accountNumber);
+
+    int accountNum;
+    // Check if account number is valid (9 digits and numeric)
+    while (!isValidAccountNumber(newClient->accountNumber, accountNum)) {
+        cout << "Invalid account number. Please enter a valid 9-digit account number: ";
+        getline(cin, newClient->accountNumber);
+    }
+
+    newClient->next = clientHead;
+    clientHead = newClient;
+    cout << "Client created successfully.\n";
+}
+
+// Function to display all clients
+void DisplayClients() {
+    if (clientHead == nullptr) {
+        cout << "No clients to display.\n";
+        return;
+    }
+
+    Client* tempClient = clientHead;
+    cout << "=======================================================\n";
+    cout << "|                       CLIENTS                       |\n";
+    cout << "=======================================================\n";
+
+    // Loop through the linked list of clients and display their details
+    while (tempClient != nullptr) {
+        cout << "Name: " << tempClient->fName << " " << tempClient->mName << " " << tempClient->lName << "\n";
+        cout << "Year of Birth: " << tempClient->YearofBirth << "\n";
+        cout << "Account Number: " << tempClient->accountNumber << "\n";
+        cout << "-------------------------------------------------------\n";
+
+        // Move to the next client in the linked list
+        tempClient = tempClient->next;
+    }
+    cout << "=======================================================\n";
+}
+
+// Remaining functions to add accounts, transactions, update and delete clients...
+
+void AddAccountToClient() {
+    if (clientHead == nullptr) {
+        cout << "No clients available. Please create a client first.\n";
+        return;
+    }
+
+    // Display the list of clients
+    Client* tempClient = clientHead;
+    int clientIndex = 1;
+    cout << "=======================================================\n";
+    cout << "|                   AVAILABLE CLIENTS                 |\n";
+    cout << "=======================================================\n";
+    while (tempClient != nullptr) {
+        cout << clientIndex++ << ". " << tempClient->fName << " " << tempClient->lName
+            << " (Account Number: " << tempClient->accountNumber << ")\n";
+        tempClient = tempClient->next;
+    }
+    cout << "=======================================================\n";
+
+    // Prompt user to select a client by account number
+    cout << "Enter client account number to add an account: ";
+    string clientAccountNumber;
+    getline(cin, clientAccountNumber);
+
+    // Find the client with the entered account number
+    tempClient = clientHead;
+    bool found = false;
+    while (tempClient != nullptr) {
+        if (tempClient->accountNumber == clientAccountNumber) {
+            found = true;
+            break;
+        }
+        tempClient = tempClient->next;
+    }
+
+    if (!found) {
+        cout << "Client not found with the given account number.\n";
+        return;
+    }
+
+    // Now add a new account to the found client
+    cout << "Enter account number for the new account (9 digits): ";
+    string newAccountNumber;
+    getline(cin, newAccountNumber);
+
+    // Validate the account number using the updated function
+    int newAccountNum;
+    if (!isValidAccountNumber(newAccountNumber, newAccountNum)) {
+        cout << "Invalid account number. Please enter a valid 9-digit account number.\n";
+        return;
+    }
+
+    // Check if the account already exists
+    Account* tempAccount = tempClient->accountHead;
+    while (tempAccount != nullptr) {
+        if (tempAccount->accountNumber == newAccountNum) {
+            cout << "Account already exists with this number.\n";
+            return;
+        }
+        tempAccount = tempAccount->next;
+    }
+
+    // Add new account to client's linked list of accounts
+    Account* newAccount = new Account;
+    newAccount->accountNumber = newAccountNum;  // Use the validated account number
+    newAccount->balance = 0.0;  // Initialize balance to 0
+    newAccount->next = tempClient->accountHead;
+    tempClient->accountHead = newAccount;  // Insert at the head of the account list
+
+    cout << "Account added successfully to client " << tempClient->fName << " " << tempClient->lName << ".\n";
+}
+// Function to update client information
+void UpdateClientInformation(string accountNumber) {
+    Client* tempClient = clientHead;
+    bool found = false;
+    while (tempClient != nullptr) {
+        if (tempClient->accountNumber == accountNumber) {
+            cout << "Enter new first name: ";
+            cin >> tempClient->fName;
+            cout << "Enter new middle name: ";
+            cin >> tempClient->mName;
+            cout << "Enter new last name: ";
+            cin >> tempClient->lName;
+            cout << "Enter new Year of Birth: ";
+            cin >> tempClient->YearofBirth;
+            found = true;
+            cout << "Client information updated successfully.\n";
+            break;
+        }
+        tempClient = tempClient->next;
+    }
+    if (!found) {
+        cout << "Client not found with the given account number.\n";
+    }
+}
+
+// Function to delete a client
+void DeleteClient(string accountNumber) {
+    Client* tempClient = clientHead;
+    Client* prevClient = nullptr;
+    bool found = false;
+
+    while (tempClient != nullptr) {
+        if (tempClient->accountNumber == accountNumber) {
+            if (prevClient == nullptr) {
+                clientHead = tempClient->next;
+            }
+            else {
+                prevClient->next = tempClient->next;
+            }
+            delete tempClient;
+            found = true;
+            cout << "Client deleted successfully.\n";
+            break;
+        }
+        prevClient = tempClient;
+        tempClient = tempClient->next;
+    }
+    if (!found) {
+        cout << "Client not found with the given account number.\n";
+    }
+}
+
+// Function to delete an account under a specific client
+void DeleteAccountUnderClient(string clientName, string accountNumber) {
+    Client* tempClient = clientHead;
+    bool clientFound = false;
+
+    while (tempClient != nullptr) {
+        // Check if the client matches by name
+        if (tempClient->fName == clientName) {
+            Account* tempAccount = tempClient->accountHead;
+            Account* prevAccount = nullptr;
+            bool accountFound = false;
+
+            // Traverse the client's account list to find the account
+            while (tempAccount != nullptr) {
+                if (tempAccount->accountNumber == stoi(accountNumber)) {
+                    // If the account is the first in the list
+                    if (prevAccount == nullptr) {
+                        tempClient->accountHead = tempAccount->next;
+                    }
+                    else {
+                        prevAccount->next = tempAccount->next;
+                    }
+                    delete tempAccount;  // Delete the account
+                    accountFound = true;
+                    cout << "Account deleted successfully under client: " << clientName << endl;
+                    break;
+                }
+                prevAccount = tempAccount;
+                tempAccount = tempAccount->next;
+            }
+
+            if (!accountFound) {
+                cout << "Account not found with the given account number under client: " << clientName << endl;
+            }
+            clientFound = true;
+            break;
+        }
+        tempClient = tempClient->next;
+    }
+
+    if (!clientFound) {
+        cout << "Client not found with the given name: " << clientName << endl;
+    }
+}
+
+// Function to add a transaction (credit or debit) to an account, with a fixed fee for withdrawals
+void AddTransactionToAccount() {
+    if (clientHead == nullptr) {
+        cout << "No clients available. Please create a client first.\n";
+        return;
+    }
+
+    // Get the account number from the user
+    cout << "Enter client account number: ";
+    string clientAccountNumber;
+    getline(cin, clientAccountNumber);
+
+    // Find the client
+    Client* tempClient = clientHead;
+    bool clientFound = false;
+    while (tempClient != nullptr) {
+        if (tempClient->accountNumber == clientAccountNumber) {
+            clientFound = true;
+            break;
+        }
+        tempClient = tempClient->next;
+    }
+
+    if (!clientFound) {
+        cout << "Client not found.\n";
+        return;
+    }
+
+    // Ask for the specific account to add a transaction
+    cout << "Enter account number to add a transaction: ";
+    int accountNumber;
+    cin >> accountNumber;
+    cin.ignore(); // consume newline
+
+    Account* tempAccount = tempClient->accountHead;
+    bool accountFound = false;
+    while (tempAccount != nullptr) {
+        if (tempAccount->accountNumber == accountNumber) {
+            accountFound = true;
+            break;
+        }
+        tempAccount = tempAccount->next;
+    }
+
+    if (!accountFound) {
+        cout << "Account not found under this client.\n";
+        return;
+    }
+
+    // Ask if it's a debit (withdrawal) or credit (deposit) transaction
+    cout << "Enter transaction type (1 for Credit - Deposit, 2 for Debit - Withdraw): ";
+    int transactionType;
+    cin >> transactionType;
+    cin.ignore(); // consume newline
+
+    // Transaction details
+    int transactionID, amount;
+    string time, date, purpose;
+    cout << "Enter transaction ID: ";
+    cin >> transactionID;
+    cin.ignore(); // consume newline
+    cout << "Enter amount: ";
+    cin >> amount;
+    cin.ignore(); // consume newline
+    cout << "Enter time (HH:MM): ";
+    getline(cin, time);
+    cout << "Enter date (DD/MM/YYYY): ";
+    getline(cin, date);
+    cout << "Enter purpose: ";
+    getline(cin, purpose);
+
+    // Fixed withdrawal fee directly in the code (50 pesos)
+    double withdrawalFee = 50.0;
+
+    // Add the transaction as either credit (deposit) or debit (withdrawal)
+    if (transactionType == 1) {  // Credit (Deposit)
+        Credit* newCredit = new Credit;
+        newCredit->transactionID = transactionID;
+        newCredit->amount = amount;
+        newCredit->time = time;
+        newCredit->date = date;
+        newCredit->purpose = purpose;
+        newCredit->next = tempAccount->creditHead;
+        tempAccount->creditHead = newCredit;
+
+        // Update balance after deposit
+        tempAccount->balance += amount;
+        cout << "Deposit of " << amount << " added successfully. New Balance: " << tempAccount->balance << endl;
+    }
+    else if (transactionType == 2) {  // Debit (Withdrawal)
+        double totalWithdrawalAmount = amount + withdrawalFee;  // Total amount to deduct
+
+        if (tempAccount->balance < totalWithdrawalAmount) {
+            cout << "Insufficient balance. Withdrawal failed.\n";
+            return;
+        }
+
+        Debit* newDebit = new Debit;
+        newDebit->transactionID = transactionID;
+        newDebit->amount = amount;
+        newDebit->time = time;
+        newDebit->date = date;
+        newDebit->purpose = purpose;
+        newDebit->next = tempAccount->debitHead;
+        tempAccount->debitHead = newDebit;
+
+        // Update balance after withdrawal, including fee deduction
+        tempAccount->balance -= totalWithdrawalAmount;
+        cout << "Withdrawal of " << amount << " (Fee: 50 pesos) completed successfully.\n";
+        cout << "Total deducted: " << totalWithdrawalAmount << ". New Balance: " << tempAccount->balance << endl;
+    }
+    else {
+        cout << "Invalid transaction type.\n";
+    }
+}
+
+// Main menu for the bank system
+void RunBankSystem() {
+    int choice;
+    do {
+        cout << "=======================================================\n";
+        cout << "|              BANK MANAGEMENT SYSTEM                 |\n";
+        cout << "=======================================================\n";
+        cout << "| 1. Create Client                                    |\n";
+        cout << "| 2. Display Clients                                  |\n";
+        cout << "| 3. Add Account to Client                            |\n";
+        cout << "| 4. Add Transaction to Account                       |\n"; // This can be further implemented
+        cout << "| 5. Update Client Information                        |\n";
+        cout << "| 6. Delete Client                                    |\n";
+        cout << "| 7. Delete an account under a client                 |\n";
+        cout << "| 8. Exit                                             |\n";
+        cout << "=======================================================\n";
+        cout << "Enter your choice: ";
+        cin >> choice;
+        cin.ignore(); // To consume newline character left in buffer
+
+        switch (choice) {
+        case 1:
+            CreateClient();
+            break;
+        case 2:
+            DisplayClients();
+            break;
+        case 3:
+            AddAccountToClient();
+            break;
+        case 5: {
+            string accNumber;
+            cout << "Enter client account number to update: ";
+            cin >> accNumber;
+            UpdateClientInformation(accNumber);
+            break;
+        }
+        case 6: {
+            string accNumber;
+            cout << "Enter client account number to delete: ";
+            cin >> accNumber;
+            DeleteClient(accNumber);
+            break;
+        }
+        case 7: {
+            string clientName, accountNumber;
+            cout << "Enter client name: ";
+            getline(cin, clientName);
+            cout << "Enter account number to delete: ";
+            getline(cin, accountNumber);
+            DeleteAccountUnderClient(clientName, accountNumber);
+            break;
+        }
+        case 8:
+            cout << "Exiting...\n";
+            break;
+        default:
+            cout << "Invalid choice, please try again.\n";
+        }
+    } while (choice != 8);
+}
