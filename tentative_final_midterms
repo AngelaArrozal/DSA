@@ -121,7 +121,7 @@ void CreateClient() {
     cout << "Client created successfully.\n";
 }
 
-// Function to display all clients
+// Function to display all clients with numbering
 void DisplayClients() {
     if (clientHead == nullptr) {
         cout << "No clients to display.\n";
@@ -129,15 +129,17 @@ void DisplayClients() {
     }
 
     Client* tempClient = clientHead;
+    int clientNumber = 1;  // To keep track of client numbering
     cout << "=======================================================\n";
     cout << "|                       CLIENTS                       |\n";
     cout << "=======================================================\n";
 
-    // Loop through the linked list of clients and display their details
+    // Loop through the linked list of clients and display their details with numbering
     while (tempClient != nullptr) {
-        cout << "Name: " << tempClient->fName << " " << tempClient->mName << " " << tempClient->lName << "\n";
-        cout << "Year of Birth: " << tempClient->YearofBirth << "\n";
-        cout << "Account Number: " << tempClient->accountNumber << "\n";
+        cout << "Client #" << clientNumber++ << ":\n";  // Display client number
+        cout << "  Name: " << tempClient->fName << " " << tempClient->mName << " " << tempClient->lName << "\n";
+        cout << "  Year of Birth: " << tempClient->YearofBirth << "\n";
+        cout << "  Account Number: " << tempClient->accountNumber << "\n";
         cout << "-------------------------------------------------------\n";
 
         // Move to the next client in the linked list
